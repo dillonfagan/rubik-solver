@@ -49,7 +49,7 @@ def shortest_path(start, end):
             # for each possible move from the position...
             for move in rubik.quarter_twists:
                 # get the next state given a move
-                next_position = perm_apply(move, position)
+                next_position = rubik.perm_apply(move, position)
                 # if the next state hasn't yet been visited:
                 if next_position not in depth:
                     depth[next_position] = i
@@ -63,7 +63,7 @@ def shortest_path(start, end):
             # for each possible move from the position...
             for move in rubik.quarter_twists:
                 # get the next state given a move
-                next_position = perm_apply(move, position)
+                next_position = rubik.perm_apply(move, position)
                 # if the next state hasn't yet been visited:
                 if next_position not in depth:
                     depth[next_position] = i
