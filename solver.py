@@ -38,28 +38,57 @@ def shortest_path(start, end):
     i = 1
 
     while len(frontier_left) > 0 or len(frontier_right) > 0:
-        if len(frontier_left) > len(frontier_right):
-            frontier_left, frontier_right = frontier_right, frontier_left
-            moves_left, moves_right = moves_right, moves_left
+        new_frontier_left = set()
+        new_moves_left = []
 
-        new_frontier = set()
-        new_moves = []
-        for move in moves_left:
-            #
+        new_frontier_right = set()
+        new_moves_right = []
 
+        # for each cube state in the frontier...
+        for position in frontier_left:
+            # for each possible move from the position...
+            for move in rubik.quarter_twists:
+                # get the next state given a move
+                next_position = perm_apply(move, position)
+                # if the next state hasn't yet been visited:
+                if next_position not in depth:
+                    depth[next_position] = i
+                    parent[next_position] = position
+
+                    new_frontier_left.add(next_position)
+                    new_moves_left.append(move)
+
+        # for each cube state in the frontier...
+        for position in frontier_right:
+            # for each possible move from the position...
+            for move in rubik.quarter_twists:
+                # get the next state given a move
+                next_position = perm_apply(move, position)
+                # if the next state hasn't yet been visited:
+                if next_position not in depth:
+                    depth[next_position] = i
+                    parent[next_position] = position
+
+                    new_frontier_right.add(next_position)
+                    new_moves_right.append(move)
+
+        frontier_left = new_frontier_left
+        moves_left = new_moves_left
+
+        frontier_right = new_frontier_right
+        moves_right = new_moves_right
+
+        # if left and right frontiers have config in common, shortest path found
+        if len(frontier_left & frontier_right) > 0 or len(moves_left + moves_right) > 14:
+            moves = []
+            for move in moves_left:
+                moves.append(move)
+            for move in moves_right.reverse:
+                moves.append(move)
+            return moves
+
+        # increment depth
         i += 1
-
-        # perm_inverse -> get the parent of the config?
-
-
-    # if left and right frontiers have config in common, shortest path found
-    if len(frontier_left & frontier_right) > 0:
-        moves = []
-        for move in moves_left:
-            moves.append(move)
-        for move in moves_right.reverse:
-            moves.append(move)
-        return moves
 
 
 def bfs(s, adj):
