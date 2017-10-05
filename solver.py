@@ -79,7 +79,7 @@ def shortest_path(start, end):
         moves_right = new_moves_right
 
         # if left and right frontiers have config in common, shortest path found
-        if len(frontier_left & frontier_right) > 0 or len(moves_left + moves_right) > 14:
+        if len(frontier_left & frontier_right) > 0 or (len(moves_left) + len(moves_right) > 14):
             moves = []
             for move in moves_left:
                 moves.append(move)
