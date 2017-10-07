@@ -12,97 +12,95 @@ def shortest_path(start, end):
     if start == end:
         return []
 
-    # the moves in order to reach the end
-    moves_left = []
-    moves_right = []
-
     # right-moving frontier, starting from left
-    frontier_left = set()
+    frontier_left = set() # invariant - initialization
     frontier_left.add(start)
 
     # left-moving frontier, starting from right
-    frontier_right = set()
+    frontier_right = set() # invariant - initialization
     frontier_right.add(end)
 
     # distance moved from the origins
-    depth = {}
-    depth[start] = 0
-    depth[end] = 0
+    dist = {} # invariant - initialization
+    dist[start] = 0 # invariant - initialization
+    dist[end] = 0 # invariant - initialization
 
     # parent of the respective config
-    parent = {}
-    parent[start] = None
-    parent[end] = None
+    left_prev = {} # invariant - initialization
+    right_prev = {} # invariant - initialization
+
+    left_prev[start] = None # invariant - initialization
+    right_prev[end] = None # invariant - initialization
+
+    left_path = {} # invariant - initialization
+    right_path = {} # invariant - initialization
+    # path[(position, neighbor)] = the move
+
+    def return_shortest_path():
+        moves = [] # invariant - initialization
+        target = None # invariant - initialization
+        for n in (frontier_left & frontier_right):
+            target = n
+
+        while left_prev[target]:
+            move = left_path[(left_prev[target], target)]
+            moves.append(move)
+            target = left_prev[target]
+
+        for n in (frontier_left & frontier_right):
+            target = n
+
+        reverse_moves = [] # invariant - initialization
+        while right_prev[target]:
+            move = right_path[(right_prev[target], target)]
+            reverse_moves.append(move)
+            target = right_prev[target]
+
+        for move in reverse_moves[::-1]:
+            moves.append(move)
+
+        return moves # invariant - termination
 
     # to track depth
-    i = 1
+    i = 1 # invariant - initialization
 
-    while len(frontier_left) > 0 or len(frontier_right) > 0:
-        new_frontier_left = set()
-        new_moves_left = []
+    # to flip between left and right
+    left = False # invariant - initialization
+    while True:
+        # if true, there is no solution
+        if i > 7:
+            return None
 
-        new_frontier_right = set()
-        new_moves_right = []
+        left = not left
+
+        frontier = set() # invariant - initialization
 
         # for each cube state in the frontier...
-        for position in frontier_left:
+        for position in frontier:
+
+            # if left and right frontiers have config in common, shortest path found
+            if position in frontier_left and position in frontier_right:
+                return return_shortest_path()
+
             # for each possible move from the position...
             for move in rubik.quarter_twists:
                 # get the next state given a move
-                next_position = rubik.perm_apply(move, position)
-                # if the next state hasn't yet been visited:
-                if next_position not in depth:
-                    depth[next_position] = i
-                    parent[next_position] = position
+                neighbor = rubik.perm_apply(move, position) # invariant - initialization
 
-                    new_frontier_left.add(next_position)
-                    new_moves_left.append(move)
+                if neighbor not in frontier_left or neighbor not in frontier_right:
+                    frontier.add(neighbor)
+                    dist[neighbor] = i
 
-        # for each cube state in the frontier...
-        for position in frontier_right:
-            # for each possible move from the position...
-            for move in rubik.quarter_twists:
-                # get the next state given a move
-                next_position = rubik.perm_apply(move, position)
-                # if the next state hasn't yet been visited:
-                if next_position not in depth:
-                    depth[next_position] = i
-                    parent[next_position] = position
+                    if left:
+                        left_path[(position, neighbor)] = move
+                        left_prev[neighbor] = position
+                    else:
+                        right_path[(position, neighbor)] = move
+                        right_prev[neighbor] = position
 
-                    new_frontier_right.add(next_position)
-                    new_moves_right.append(move)
-
-        frontier_left = new_frontier_left
-        moves_left = new_moves_left
-
-        frontier_right = new_frontier_right
-        moves_right = new_moves_right
-
-        # if left and right frontiers have config in common, shortest path found
-        if len(frontier_left & frontier_right) > 0 or (len(moves_left) + len(moves_right) > 14):
-            moves = []
-            for move in moves_left:
-                moves.append(move)
-            for move in moves_right.reverse:
-                moves.append(move)
-            return moves
-
-        # increment depth
-        i += 1
-
-
-def bfs(s, adj):
-    depth = {s: 0}
-    parent = {s: None}
-    i = 1
-    frontier = [s]
-    while len(frontier) > 0:
-        search = []
-        for u in frontier:
-            for v in adj[u]:
-                if v not in depth:
-                    depth[v] = i
-                    parent[v] = u
-                    search.append(v)
-        frontier = search
-        i += 1
+        if left:
+            frontier_left = frontier
+        else:
+            frontier_right = frontier
+            # increment depth
+            i += 1  # invariant - maintenance
